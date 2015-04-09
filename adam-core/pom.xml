@@ -123,7 +123,7 @@
     </dependency>
     <dependency>
       <groupId>org.bdgenomics.bdg-utils</groupId>
-      <artifactId>bdg-utils-parquet</artifactId>
+      <artifactId>bdg-utils-io</artifactId>
     </dependency>
     <dependency>
       <groupId>com.esotericsoftware.kryo</groupId>

@@ -26,7 +26,7 @@
     <!-- Edit the following line to configure the Hadoop (HDFS) version. -->
     <hadoop.version>2.2.0</hadoop.version>
     <scoverage.version>0.99.2</scoverage.version>
-    <utils.version>0.1.1</utils.version>
+    <utils.version>0.1.3-SNAPSHOT</utils.version>
     <htsjdk.version>1.129</htsjdk.version>
   </properties>
   
@@ -357,7 +357,7 @@
       </dependency>
       <dependency>
         <groupId>org.bdgenomics.bdg-utils</groupId>
-        <artifactId>bdg-utils-parquet</artifactId>
+        <artifactId>bdg-utils-io</artifactId>
         <version>${utils.version}</version>
       </dependency>
       <dependency>
