@@ -177,6 +177,27 @@
       <artifactId>scalatest_${scala.artifact.suffix}</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.kitesdk</groupId>
+      <artifactId>kite-data-core</artifactId>
+      <version>1.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kitesdk</groupId>
+      <artifactId>kite-data-mapreduce</artifactId>
+      <version>1.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kitesdk</groupId>
+      <artifactId>kite-data-s3</artifactId>
+      <version>1.0.1-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-aws</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

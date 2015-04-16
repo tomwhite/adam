@@ -41,7 +41,8 @@ object ADAMMain extends Logging {
 	  ComputeVariants
 	*/
           PluginExecutor,
-          Flatten
+          Flatten,
+          Partition
         )
       ),
       CommandGroup(
