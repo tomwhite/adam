@@ -28,7 +28,6 @@ class PartitionSuite extends ADAMFunSuite {
 
     val loader = Thread.currentThread().getContextClassLoader
     val partitionStrategyPath = loader.getResource("genotypes-partition-strategy.json")
-      .getPath
     val inputPath = loader.getResource("small.vcf").getPath
     val outputFile = File.createTempFile("adam-cli.PartitionSuite", ".adam")
     val outputPath = outputFile.getAbsolutePath
