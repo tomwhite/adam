@@ -21,6 +21,7 @@ import java.io.{ ObjectInputStream, ObjectOutputStream, IOException, File }
 
 import org.apache.avro.Schema
 import org.apache.avro.generic.IndexedRecord
+import org.apache.hadoop.fs.{ Path, FileSystem }
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark._
 import org.apache.spark.rdd.MetricsContext._
@@ -47,7 +48,7 @@ object Partition extends ADAMCommandCompanion {
 class PartitionArgs extends Args4jBase with ParquetSaveArgs with Serializable {
   @Args4jOption(required = true, name = "-partition_strategy_file",
     usage = "A JSON file containing the partition strategy")
-  var partitionStrategyFile: File = _
+  var partitionStrategyFile: String = _
   @Argument(required = true, metaVar = "INPUT", usage = "The ADAM file to partition",
     index = 0)
   var inputPath: String = null
@@ -74,9 +75,11 @@ class Partition(val args: PartitionArgs) extends ADAMSparkCommand[PartitionArgs]
 
     val schema: Schema = records.first()._2.getSchema
 
+    val fs = FileSystem.get(sc.hadoopConfiguration)
+
     val desc = new DatasetDescriptor.Builder()
       .schema(schema)
-      .partitionStrategy(args.partitionStrategyFile)
+      .partitionStrategy(fs.open(new Path(args.partitionStrategyFile)))
       .format(Formats.PARQUET)
       .build
     val dataset: org.kitesdk.data.View[IndexedRecord] =
