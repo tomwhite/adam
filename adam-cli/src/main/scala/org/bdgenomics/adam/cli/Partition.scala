@@ -20,12 +20,12 @@ package org.bdgenomics.adam.cli
 import java.io.{ ObjectInputStream, ObjectOutputStream, IOException, File }
 
 import org.apache.avro.Schema
-import org.apache.avro.generic.IndexedRecord
 import org.apache.hadoop.fs.{Path, FileSystem}
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark._
 import org.apache.spark.rdd.MetricsContext._
 import org.bdgenomics.adam.util.HadoopUtil
+import org.bdgenomics.formats.avro.Genotype
 import org.bdgenomics.utils.instrumentation.Metrics
 import org.kitesdk.data.mapreduce.DatasetKeyOutputFormat
 import org.kitesdk.data.spi.{ StorageKey, DataModelUtil, EntityAccessor, PartitionStrategyParser }
@@ -66,11 +66,11 @@ class Partition(val args: PartitionArgs) extends ADAMSparkCommand[PartitionArgs]
   def run(sc: SparkContext, job: Job) {
 
     val job = HadoopUtil.newJob(sc)
-    val records = sc.newAPIHadoopFile(
+    val records = sc.newAPIHadoopFile[Void, Genotype, AvroParquetInputFormat](
       args.inputPath,
       classOf[AvroParquetInputFormat],
       classOf[Void],
-      classOf[IndexedRecord],
+      classOf[Genotype],
       ContextUtil.getConfiguration(job)
     )
     if (Metrics.isRecording) records.instrument() else records
@@ -85,8 +85,8 @@ class Partition(val args: PartitionArgs) extends ADAMSparkCommand[PartitionArgs]
         .partitionStrategy(partitionStrategyStream)
         .format(Formats.PARQUET)
         .build
-      val dataset: org.kitesdk.data.View[IndexedRecord] =
-        Datasets.create("dataset:" + args.outputPath, desc, classOf[IndexedRecord])
+      val dataset: org.kitesdk.data.View[Genotype] =
+        Datasets.create("dataset:" + args.outputPath, desc, classOf[Genotype])
       DatasetKeyOutputFormat.configure(job).writeTo(dataset)
       var adamRecords = records.map(r => r.swap)
 
@@ -109,18 +109,18 @@ class Partition(val args: PartitionArgs) extends ADAMSparkCommand[PartitionArgs]
 }
 
 class KitePartitioner(partitions: Int,
-                      datasetType: Class[IndexedRecord],
+                      datasetType: Class[Genotype],
                       @transient var schema: Schema,
                       @transient var partitionStrategy: PartitionStrategy) extends Partitioner {
 
-  @transient var accessor: EntityAccessor[IndexedRecord] =
+  @transient var accessor: EntityAccessor[Genotype] =
     DataModelUtil.accessor(datasetType, schema)
   @transient var key: StorageKey = new StorageKey(partitionStrategy)
 
   override def numPartitions: Int = partitions
 
   override def getPartition(k: Any): Int = {
-    val record = k.asInstanceOf[IndexedRecord]
+    val record = k.asInstanceOf[Genotype]
     accessor.keyFor(record, null, key)
     nonNegativeMod(key.hashCode(), numPartitions)
   }
