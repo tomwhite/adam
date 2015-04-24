@@ -49,6 +49,8 @@ class PartitionArgs extends Args4jBase with ParquetSaveArgs with Serializable {
   @Args4jOption(required = true, name = "-partition_strategy_file",
     usage = "A JSON file containing the partition strategy")
   var partitionStrategyFile: String = _
+  @Args4jOption(required = false, name = "-repartition", usage = "Set the number of partitions to map data to")
+  var repartition: Int = -1
   @Argument(required = true, metaVar = "INPUT", usage = "The ADAM file to partition",
     index = 0)
   var inputPath: String = null
@@ -86,7 +88,14 @@ class Partition(val args: PartitionArgs) extends ADAMSparkCommand[PartitionArgs]
       val dataset: org.kitesdk.data.View[IndexedRecord] =
         Datasets.create("dataset:" + args.outputPath, desc, classOf[IndexedRecord])
       DatasetKeyOutputFormat.configure(job).writeTo(dataset)
-      records.map(r => r.swap)
+      var adamRecords = records.map(r => r.swap)
+
+      if (args.repartition != -1) {
+        log.info("Repartitioning reads to to '%d' partitions".format(args.repartition))
+        adamRecords = adamRecords.repartition(args.repartition)
+      }
+
+      adamRecords
         .partitionBy(new KitePartitioner(sc.defaultParallelism, dataset.getType, schema,
         desc.getPartitionStrategy))
         .saveAsNewAPIHadoopDataset(job.getConfiguration)
