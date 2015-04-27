@@ -77,7 +77,7 @@ class Partition(val args: PartitionArgs) extends ADAMSparkCommand[PartitionArgs]
     )
     if (Metrics.isRecording) records.instrument() else records
 
-    val schema: Schema = records.first()._2.getSchema
+    val schema: Schema = Genotype.SCHEMA$
 
     val fs = FileSystem.get(sc.hadoopConfiguration)
     val partitionStrategyStream = fs.open(new Path(args.partitionStrategyFile))
