@@ -20,7 +20,7 @@ package org.bdgenomics.adam.cli
 import java.io.{ ObjectInputStream, ObjectOutputStream, IOException, File }
 
 import org.apache.avro.Schema
-import org.apache.hadoop.fs.{Path, FileSystem}
+import org.apache.hadoop.fs.{ Path, FileSystem }
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark._
 import org.apache.spark.rdd.MetricsContext._
@@ -31,7 +31,8 @@ import org.kitesdk.data.mapreduce.DatasetKeyOutputFormat
 import org.kitesdk.data.spi.{ StorageKey, DataModelUtil, EntityAccessor, PartitionStrategyParser }
 import org.kitesdk.data.{ PartitionStrategy, DatasetDescriptor, Datasets, Formats }
 import org.kohsuke.args4j.{ Option => Args4jOption, Argument }
-import parquet.avro.AvroParquetInputFormat
+import parquet.avro.{ AvroReadSupport, AvroParquetInputFormat }
+import parquet.hadoop.ParquetInputFormat
 import parquet.hadoop.util.ContextUtil
 
 import scala.util.control.NonFatal
@@ -66,9 +67,10 @@ class Partition(val args: PartitionArgs) extends ADAMSparkCommand[PartitionArgs]
   def run(sc: SparkContext, job: Job) {
 
     val job = HadoopUtil.newJob(sc)
-    val records = sc.newAPIHadoopFile[Void, Genotype, AvroParquetInputFormat](
+    ParquetInputFormat.setReadSupportClass(job, classOf[AvroReadSupport[Genotype]])
+    val records = sc.newAPIHadoopFile(
       args.inputPath,
-      classOf[AvroParquetInputFormat],
+      classOf[ParquetInputFormat[Genotype]],
       classOf[Void],
       classOf[Genotype],
       ContextUtil.getConfiguration(job)
@@ -97,7 +99,7 @@ class Partition(val args: PartitionArgs) extends ADAMSparkCommand[PartitionArgs]
 
       adamRecords
         .partitionBy(new KitePartitioner(sc.defaultParallelism, dataset.getType, schema,
-        desc.getPartitionStrategy))
+          desc.getPartitionStrategy))
         .saveAsNewAPIHadoopDataset(job.getConfiguration)
     } finally {
       if (partitionStrategyStream != None) {
