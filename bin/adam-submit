@@ -85,6 +85,7 @@ gatherSparkSubmitOpts $NEW_OPTIONS
   --conf spark.kryo.referenceTracking=true \
   --conf spark.kryo.registrationRequired=true \
   --conf spark.local.dir=/tmp \
+  --conf spark.io.compression.codec=compression.GzipCompressionCodec \
   ${ADAM_OPTS:- } \
   --conf spark.executor.memory=${ADAM_EXECUTOR_MEMORY:-"4g"} \
   --driver-memory ${ADAM_DRIVER_MEMORY:-"4g"} \
